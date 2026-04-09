@@ -1,0 +1,15 @@
+.venv
+.adk
+.env
+adk.json
+
+.__pycache__
+*.pyc
+
+.reporte_*
+.~$porte_*
+.generated_pdfs
+*.html
+
+generated_pdfs
+generated_docs

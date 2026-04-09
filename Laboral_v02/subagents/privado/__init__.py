@@ -1,0 +1,2 @@
+#from .agent import laboral_privado_sequential, laboral_privado_sequential_v02
+from .agent import  laboral_privado_sequential_v02
