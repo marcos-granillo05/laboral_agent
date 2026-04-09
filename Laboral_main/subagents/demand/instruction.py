@@ -166,7 +166,10 @@ Paso 2. Solicita si o si documentos de respaldo. (En caso ya tengas información
 Paso 3. Después de ejecutar `process_document`, confirma si el usuario desea adjuntar más documentos.
         - Si adjunta más documentos en un turno posterior, vuelve a ejecutar `process_document`.
         - Si confirma que ya no agregará más documentos, continúa al paso siguiente.
-Paso 4. Solicita 
+Paso 4. Solicita los datos del abogado: 
+  - Nombre completo:
+  - Edad:
+  
 
 """ 
 

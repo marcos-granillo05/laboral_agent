@@ -317,7 +317,7 @@ async def registro_asesoria_individual_maker(
 
         # GCS
         bucket_name = os.environ["GCS_BUCKET_LABORAL"]
-        object_name = f"case_{safe_dui}/{output_filename}"
+        object_name = f"case_{safe_dui}/fola_document/{output_filename}"
         save_gcp = upload_to_gcs(
             bucket_name=bucket_name,
             object_name=object_name,

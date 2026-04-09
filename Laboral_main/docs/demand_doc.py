@@ -179,6 +179,7 @@ async def demanda_despido_directo_document_maker(analysis_json: str, tool_contex
         abogado_domicilio = _safe_text(analysis.get("abogado_domicilio"))
         abogado_dui = _safe_text(analysis.get("abogado_dui"))
         abogado_tarjeta = _safe_text(analysis.get("abogado_tarjeta_abogado"))
+        abogado_edad = _safe_text(analysis.get("abogado_edad"))
 
         trabajador_nombre = _safe_text(analysis.get("trabajador_nombre"))
         trabajador_edad = _safe_text(analysis.get("trabajador_edad"))
@@ -230,7 +231,9 @@ async def demanda_despido_directo_document_maker(analysis_json: str, tool_contex
 
         p = _body(doc, font_name=font_name)
         _add_run(p, abogado_nombre, bold=True, uppercase=True, font_name=font_name)
-        _add_run(p, ", mayor de edad, Abogado y del domicilio de ", font_name=font_name)
+        _add_run(p, ", de ", font_name=font_name)
+        _add_run(p, abogado_edad, uppercase=True, font_name=font_name)
+        _add_run(p, " años de edad, Abogado y del domicilio de ", font_name=font_name)
         _add_run(p, abogado_domicilio, uppercase=True, font_name=font_name)
         _add_run(p, " con Documento Único de Identidad número ", font_name=font_name)
         _add_run(p, abogado_dui, uppercase=True, font_name=font_name)
