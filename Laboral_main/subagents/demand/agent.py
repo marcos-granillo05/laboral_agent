@@ -63,6 +63,12 @@ class employment_relationship_data(BaseModel):
     person_who_dismissed_position: str = Field(description="Cargo de la persona que realizó el despido")
     dismissal_place: str = Field(description="Lugar donde ocurrió el despido")
 
+class complete_information(BaseModel):
+    worker_information: worker_personal_data = Field(description="Información completa del Trabajador")
+    lawyer_information: personal_lawyer_data = Field(description="Información completa del abotado")
+    employment_relationship_data = employment_relationship_data = Field(description="Información asociada al Trabajador respecto a su relación laboral")
+    law_suggestions: str = Field(description="Leyes asociadas violadas al caso")
+
 # class formatterData(BaseModel):
 #     personal_data: personal_worker_data = Field(description="Toda la información del usuario.")
 #     html_content : str = Field(description="HTML generado")
@@ -72,8 +78,8 @@ formatter_agent= Agent(
     name="formatter_agent",
     model="gemini-2.5-flash",
     description="Agente encargado de formatear",
-    instruction= instruction.formatter_agent_instructions_v02,
-    output_schema=formatterData,
+    instruction= instruction.formatter_agent_instructions_v03,
+   # output_schema=formatterData,
     output_key="formatter_agent_ok",
    
 )
@@ -100,7 +106,7 @@ demand_agent = Agent(
     name="demand_agent",
     model="gemini-2.5-pro",
     description="Eres un agente que crea demandas preliminares.",
-    instruction=instruction.demand_instruction_v02,
+    instruction=instruction.demand_instruction_v03,
     #tools=[process_document, generate_pdf_from_html],
     #tools=[process_document, generate_docx_from_html],
     tools=[process_document, AgentTool(agent=sequential_generator_agent)],

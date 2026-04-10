@@ -211,8 +211,8 @@ async def demanda_despido_directo_document_maker(analysis_json: str, tool_contex
         lugar_despido = _safe_text(analysis.get("lugar_despido"))
         relato_hechos_adicional = _safe_text(analysis.get("relato_hechos_adicional"))
 
-        pretensiones = _list_or_empty(analysis.get("pretensiones_o_prestaciones", []))
-
+       # pretensiones = _list_or_empty(analysis.get("pretensiones_o_prestaciones", []))
+        suggestions = _safe_text(analysis.get("suggestions"))
         # =========================
         # DOCUMENTO
         # =========================
@@ -332,28 +332,24 @@ async def demanda_despido_directo_document_maker(analysis_json: str, tool_contex
         _add_run(p, empresa_demandada, bold=True, uppercase=True, font_name=font_name)
         _add_run(p, " por medio de su representante legal antes mencionado, y si no llegásemos a ningún acuerdo en dicha audiencia, previo los trámites legales y las pruebas que oportunamente aportaré, sea condenada en la sentencia definitiva a pagarle a mi representado:", font_name=font_name)
 
-        for item in pretensiones:
-            bp = doc.add_paragraph(style="List Bullet")
-            bp.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            bp.paragraph_format.space_before = Pt(0)
-            bp.paragraph_format.space_after = Pt(0)
-            bp.paragraph_format.line_spacing = 1.0
+        if suggestions:
+            raw_items = [x.strip() for x in suggestions.split("),") if x.strip()]
+            items = []
 
-            if isinstance(item, str):
+            for raw in raw_items:
+                text = raw
+                if not text.endswith(")"):
+                    text += ")"
+                items.append(text)
+
+            for item in items:
+                bp = doc.add_paragraph(style="List Bullet")
+                bp.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                bp.paragraph_format.space_before = Pt(0)
+                bp.paragraph_format.space_after = Pt(0)
+                bp.paragraph_format.line_spacing = 1.0
+
                 r = bp.add_run(item)
-                _apply_font(r, font_name=font_name, size_pt=12)
-            elif isinstance(item, dict):
-                texto = _safe_text(item.get("texto"))
-                prestacion = _safe_text(item.get("prestacion"))
-                fundamento = _safe_text(item.get("fundamento_legal"))
-
-                contenido = texto
-                if not contenido:
-                    contenido = prestacion
-                    if fundamento:
-                        contenido = f"{prestacion}. ({fundamento})"
-
-                r = bp.add_run(contenido)
                 _apply_font(r, font_name=font_name, size_pt=12)
 
         _add_blank_line(doc)
@@ -436,51 +432,3 @@ async def demanda_despido_directo_document_maker(analysis_json: str, tool_contex
         }
     
 
-## Ejemplo: 
-{
-    "abogado_nombre": "DIEGO FRANCISCO BRIZUELA HUEZO",
-    "abogado_domicilio": "Distrito de San Salvador, Municipio de San Salvador Centro, Departamento de San Salvador",
-    "abogado_dui": "CERO CUATRO SEIS SEIS TRES SIETE UNO OCHO GUION OCHO",
-    "abogado_tarjeta_abogado": "CERO SEIS UNO SIETE CUATRO CUATRO CUATRO DOS DOS CERO CERO SIETE CINCO DOS SEIS",
-
-    "trabajador_nombre": "JONATHAN EDENILSON MAURICIO ORELLANA",
-    "trabajador_edad": "DIECIOCHO",
-    "trabajador_estado_familiar": "SOLTERO",
-    "trabajador_profesion_u_oficio": "EMPLEADO",
-    "trabajador_nacionalidad": "SALVADOREÑA",
-    "trabajador_domicilio": "DISTRITO DE SAN MARCOS, MUNICIPIO DE SAN SALVADOR SUR, DEPARTAMENTO DE SAN SALVADOR",
-    "trabajador_dui": "CERO SIETE SIETE CERO UNO CUATRO NUEVE CUATRO GUION NUEVE",
-
-    "empresa_demandada": "GRUPO FRANCO SOCIEDAD POR ACCIONES SIMPLIFICADA DE CAPITAL VARIABLE",
-    "empresa_domicilio": "DISTRITO DE SAN SALVADOR, MUNICIPIO DE SAN SALVADOR CENTRO, DEPARTAMENTO DE SAN SALVADOR",
-    "representante_legal_nombre": "DIANA AYMEE FRANCO RECINOS",
-    "representante_legal_domicilio": "DISTRITO DE EL PAISNAL, MUNICIPIO DE SAN SALVADOR NORTE, DEPARTAMENTO DE SAN SALVADOR",
-    "direccion_notificacion_empresa": "CARRETERA TRONCAL DEL NORTE, DECIMA CALLE ORIENTE Y AVENIDA CENTRAL NORTE, EDIFICIO TEXTILES GILTON AGUILARES, DISTRITO DE AGUILARES, MUNICIPIO DE SAN SALVADOR NORTE, DEPARTAMENTO DE SAN SALVADOR",
-
-    "fecha_ingreso_texto": "DIA CATORCE DE JULIO DE DOS MIL VEINTICINCO",
-    "cargo_nominal": "AUXILIAR DE CARGA",
-    "lugar_trabajo": "KILOMETRO DOCE, AUTOPISTA A COMALAPA, PUNTO DE DESCARGA SAN MARCOS, CONTIGUO A RESORTES MAHLER, DISTRITO DE SAN MARCOS, MUNICIPIO DE SAN SALVADOR SUR, DEPARTAMENTO DE SAN SALVADOR",
-    "funciones_reales": "PREPARADOR DE CARGA DE RESIDUOS SOLIDOS DE RASTRAS",
-    "jornada_descripcion": "OCHO HORAS DIARIAS",
-    "horario_trabajo": "DE LUNES A VIERNES DE NUEVE DE LA MAÑANA A CINCO DE LA TARDE, SABADO DE DIEZ DE LA MAÑANA A CUATRO DE LA TARDE, DESCANSANDO DIA DOMINGO",
-    "salario_texto": "CUATROCIENTOS DIEZ DOLARES EXACTOS DE LOS ESTADOS UNIDOS DE AMERICA MENSUALES",
-    "forma_pago": "QUINCENALMENTE POR MEDIO DE DEPÓSITO EN CUENTA BANCARIA DEL BANCO AGRICOLA",
-
-    "fecha_despido_texto": "DIA TRECE DE DICIEMBRE DE DOS MIL VEINTICINCO",
-    "hora_despido_texto": "TRES CON DIEZ MINUTOS DE LA TARDE",
-    "nombre_quien_despide": "DAVID FRANCO ABREGO",
-    "cargo_quien_despide": "SUPERVISOR DE PLANTA",
-    "lugar_despido": "EL LUGAR DE TRABAJO ANTES MENCIONADO ESPECÍFICAMENTE EN LA ZONA DE DESCARGA DE RASTRAS",
-    "relato_hechos_adicional": "",
-
-    "pretensiones_o_prestaciones": [
-        {
-            "prestacion": "Indemnización por despido injusto",
-            "fundamento_legal": "Art. 38 Ord. 11° de la Cn. y Art. 58 del C. de T."
-        },
-        {
-            "prestacion": "Vacación y Aguinaldo Proporcional",
-            "fundamento_legal": "Art. 187, 202 del C. de T."
-        }
-    ]
-}

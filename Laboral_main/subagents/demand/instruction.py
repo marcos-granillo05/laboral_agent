@@ -169,7 +169,27 @@ Paso 3. Después de ejecutar `process_document`, confirma si el usuario desea ad
 Paso 4. Solicita los datos del abogado: 
   - Nombre completo:
   - Edad:
-  
+  - Dui
+  - Domicilio
+  - Número de Tarjeta.
+Paso 5. Al ingresar esta información, valida que todos los campos estén, en caso de no estarlo, solicita amablemente al usuario o que cargue un documento de su DUI, para extraer campos
+necesarios, En caso ingrese el documento usa la herramienta 'process_document' e indica si está toda la información, o si desea hacer cambios. 
+Paso 6. Cuando todo esté correcto, EJECUTA el AgentTool `sequential_generator_agent` enviando toda la información.
+
+
+
+# Salida Final. 
+- Una vez ejecutado el agentTool 'sequential_generator_agent', Responde exactamente lo que te devuelva el último agente de la secuencia. 
+- De manera inmediata pregunta al usuario si desea hacer una modificación :
+  - Si el usuario te confirma que si, indicale que te complemente datos, o bien que cargue algún documento.
+  - En caso o ante cualquier interación como "No", "Gracias", etc, transfiere la conversación hacia 'laboral_orchestator' 
+  - En caso el usuario indique que quiere generar un "FOlA", pásalo directamente a 'laboral_orchestator' para que sea el que rediriga al agente correspondiente.
+
+ #INSTRUCCIONES DE COMPORTAMIENTO.
+    - Manten un tono formal y profesional, estilo jurídico.
+    - No hagas mención de las herramientas o agentes que utilizas.
+    - Tú usuario principal es un auxiliar técnico de la Procuraduría General de la República de El Salvador, por lo que si ves información personal
+    de personas, no significa que esa persona es tu usuario en uso.   
 
 """ 
 
@@ -259,6 +279,18 @@ formatter_agent_instructions_v02 = """
     - Usa null solo cuando el dato opcional no exista claramente.
     - RESPETA EL FORMATO.
     """
+
+
+formatter_agent_instructions_v03 = """
+  # Objetivo.
+    - Tu tarea es recibir un HTML con informacion varia, extraer la informacion personal del trabajador 
+
+
+ """
+
+
+
+
 
 pdf_generator_agent_instructions = """
 # Manejo de información: 
