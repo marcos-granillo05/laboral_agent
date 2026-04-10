@@ -47,6 +47,12 @@ def upload_to_gcs(bucket_name: str, object_name: str, data: bytes) -> dict:
     }
 
 
+def _build_artifact_filename(case_id: str, safe_dui: str, prefix: str) -> str:
+    short_case_id = case_id[:8]
+    short_dui = safe_dui[:12]
+    return f"{prefix}_{short_dui}_{short_case_id}.docx"
+
+
 def _apply_font(run, font_name="Arial", size_pt=12, color_rgb=(0, 0, 0), bold=False, italic=False):
     run.font.name = font_name
 
@@ -157,7 +163,12 @@ def _list_or_empty(value):
 
 async def demanda_despido_directo_document_maker(analysis_json: str, tool_context: CallbackContext) -> dict:
     try:
-        analysis = json.loads(analysis_json) if isinstance(analysis_json, str) else analysis
+        analysis = json.loads(analysis_json) if isinstance(analysis_json, str) else analysis_json
+
+        worker_information = analysis.get("worker_information", {}) or {}
+        lawyer_information = analysis.get("lawyer_information", {}) or {}
+        employment_relationship_data = analysis.get("employment_relationship_data", {}) or {}
+        suggestions = _safe_text(analysis.get("law_suggestions"))
 
         doc = Document()
 
@@ -175,44 +186,42 @@ async def demanda_despido_directo_document_maker(analysis_json: str, tool_contex
         # =========================
         # DATOS
         # =========================
-        abogado_nombre = _safe_text(analysis.get("abogado_nombre", "DIEGO FRANCISCO BRIZUELA HUEZO"))
-        abogado_domicilio = _safe_text(analysis.get("abogado_domicilio"))
-        abogado_dui = _safe_text(analysis.get("abogado_dui"))
-        abogado_tarjeta = _safe_text(analysis.get("abogado_tarjeta_abogado"))
-        abogado_edad = _safe_text(analysis.get("abogado_edad"))
+        abogado_nombre = _safe_text(lawyer_information.get("lawyer_name"), "DIEGO FRANCISCO BRIZUELA HUEZO")
+        abogado_domicilio = _safe_text(lawyer_information.get("lawyer_home"))
+        abogado_dui = _safe_text(lawyer_information.get("lawyer_dui"))
+        abogado_tarjeta = _safe_text(lawyer_information.get("lawyer_card"))
+        abogado_edad = _safe_text(lawyer_information.get("lawyer_age"))
 
-        trabajador_nombre = _safe_text(analysis.get("trabajador_nombre"))
-        trabajador_edad = _safe_text(analysis.get("trabajador_edad"))
-        trabajador_estado_familiar = _safe_text(analysis.get("trabajador_estado_familiar"))
-        trabajador_profesion = _safe_text(analysis.get("trabajador_profesion_u_oficio"))
-        trabajador_nacionalidad = _safe_text(analysis.get("trabajador_nacionalidad"))
-        trabajador_domicilio = _safe_text(analysis.get("trabajador_domicilio"))
-        trabajador_dui = _safe_text(analysis.get("trabajador_dui"))
+        trabajador_nombre = _safe_text(worker_information.get("worker_name"))
+        trabajador_edad = _safe_text(worker_information.get("worker_age"))
+        trabajador_estado_familiar = _safe_text(worker_information.get("worker_marital_status"))
+        trabajador_profesion = _safe_text(worker_information.get("worker_profession_or_trade"))
+        trabajador_nacionalidad = _safe_text(worker_information.get("worker_nationality"))
+        trabajador_domicilio = _safe_text(worker_information.get("worker_address"))
+        trabajador_dui = _safe_text(worker_information.get("worker_dui"))
 
-        empresa_demandada = _safe_text(analysis.get("empresa_demandada"))
-        empresa_domicilio = _safe_text(analysis.get("empresa_domicilio"))
-        representante_legal_nombre = _safe_text(analysis.get("representante_legal_nombre"))
-        representante_legal_domicilio = _safe_text(analysis.get("representante_legal_domicilio"))
-        direccion_notificacion_empresa = _safe_text(analysis.get("direccion_notificacion_empresa"))
+        empresa_demandada = _safe_text(employment_relationship_data.get("company_defendant"))
+        empresa_domicilio = _safe_text(employment_relationship_data.get("company_address"))
+        representante_legal_nombre = _safe_text(employment_relationship_data.get("legal_representative_name"))
+        representante_legal_domicilio = _safe_text(employment_relationship_data.get("legal_representative_address"))
+        direccion_notificacion_empresa = _safe_text(employment_relationship_data.get("company_notification_address"))
 
-        fecha_ingreso_texto = _safe_text(analysis.get("fecha_ingreso_texto"))
-        cargo_nominal = _safe_text(analysis.get("cargo_nominal"))
-        lugar_trabajo = _safe_text(analysis.get("lugar_trabajo"))
-        funciones_reales = _safe_text(analysis.get("funciones_reales"))
-        jornada_descripcion = _safe_text(analysis.get("jornada_descripcion"))
-        horario_trabajo = _safe_text(analysis.get("horario_trabajo"))
-        salario_texto = _safe_text(analysis.get("salario_texto"))
-        forma_pago = _safe_text(analysis.get("forma_pago"))
+        fecha_ingreso_texto = _safe_text(employment_relationship_data.get("employment_start_date_text"))
+        cargo_nominal = _safe_text(employment_relationship_data.get("job_title"))
+        lugar_trabajo = _safe_text(employment_relationship_data.get("workplace"))
+        funciones_reales = _safe_text(employment_relationship_data.get("actual_functions"))
+        jornada_descripcion = _safe_text(employment_relationship_data.get("workday_description"))
+        horario_trabajo = _safe_text(employment_relationship_data.get("work_schedule"))
+        salario_texto = _safe_text(employment_relationship_data.get("salary_text"))
+        forma_pago = _safe_text(employment_relationship_data.get("payment_method"))
 
-        fecha_despido_texto = _safe_text(analysis.get("fecha_despido_texto"))
-        hora_despido_texto = _safe_text(analysis.get("hora_despido_texto"))
-        nombre_quien_despide = _safe_text(analysis.get("nombre_quien_despide"))
-        cargo_quien_despide = _safe_text(analysis.get("cargo_quien_despide"))
-        lugar_despido = _safe_text(analysis.get("lugar_despido"))
+        fecha_despido_texto = _safe_text(employment_relationship_data.get("dismissal_date_text"))
+        hora_despido_texto = _safe_text(employment_relationship_data.get("dismissal_time_text"))
+        nombre_quien_despide = _safe_text(employment_relationship_data.get("person_who_dismissed_name"))
+        cargo_quien_despide = _safe_text(employment_relationship_data.get("person_who_dismissed_position"))
+        lugar_despido = _safe_text(employment_relationship_data.get("dismissal_place"))
         relato_hechos_adicional = _safe_text(analysis.get("relato_hechos_adicional"))
 
-       # pretensiones = _list_or_empty(analysis.get("pretensiones_o_prestaciones", []))
-        suggestions = _safe_text(analysis.get("suggestions"))
         # =========================
         # DOCUMENTO
         # =========================
@@ -398,6 +407,7 @@ async def demanda_despido_directo_document_maker(analysis_json: str, tool_contex
 
         object_name = f"case_{safe_dui}/demandas/{case_id}_{safe_dui}_demanda_despido_directo.docx"
         output_filename = f"{case_id}_{safe_dui}_demanda_despido_directo.docx"
+        artifact_filename = _build_artifact_filename(case_id, safe_dui, "ddd")
 
         save_gcp = upload_to_gcs(
             bucket_name=bucket_name,
@@ -413,7 +423,7 @@ async def demanda_despido_directo_document_maker(analysis_json: str, tool_contex
         )
 
         version = await tool_context.save_artifact(
-            filename=output_filename,
+            filename=artifact_filename,
             artifact=artifact_part
         )
 
@@ -421,6 +431,7 @@ async def demanda_despido_directo_document_maker(analysis_json: str, tool_contex
             "status": "ok",
             "message": f"El documento {output_filename} version {version} ha sido creado y disponible para descargar.",
             "gcs": save_gcp,
+            "artifact_filename": artifact_filename,
         }
 
     except Exception as e:
@@ -430,5 +441,3 @@ async def demanda_despido_directo_document_maker(analysis_json: str, tool_contex
             "error_message": str(e),
             "traceback": traceback.format_exc(),
         }
-    
-

@@ -47,6 +47,12 @@ def upload_to_gcs(bucket_name: str, object_name: str, data: bytes) -> dict:
     }
 
 
+def _build_artifact_filename(case_id: str, safe_dui: str, prefix: str) -> str:
+    short_case_id = case_id[:8]
+    short_dui = safe_dui[:12]
+    return f"{prefix}_{short_dui}_{short_case_id}.docx"
+
+
 def _apply_font(run, font_name="Arial", size_pt=None, color_rgb=(0, 0, 0), bold=False):
     run.font.name = font_name
 
@@ -246,6 +252,7 @@ async def document_maker(analysis_json: str, tool_context: CallbackContext) -> d
 
         object_name = f"case_{safe_dui}/analytical_summary/{case_id}_{safe_dui}_analytical_summary_document.docx"
         output_filename = f"{case_id}_{safe_dui}_analytical_summary_document.docx"
+        artifact_filename = _build_artifact_filename(case_id, safe_dui, "asd")
 
         save_gcp = upload_to_gcs(
             bucket_name=bucket_name,
@@ -258,14 +265,15 @@ async def document_maker(analysis_json: str, tool_context: CallbackContext) -> d
         )
 
         version = await tool_context.save_artifact(
-            filename=output_filename,
+            filename=artifact_filename,
             artifact=artifact_part
         )
 
         return {
             "status": "ok",
             "message": f"El documento {output_filename} version {version} ha sido creado y disponible para descargar.",
-            "gcs": save_gcp
+            "gcs": save_gcp,
+            "artifact_filename": artifact_filename,
         }
 
     except Exception as e:

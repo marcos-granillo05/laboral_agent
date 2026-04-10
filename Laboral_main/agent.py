@@ -1,6 +1,20 @@
 
+import os
+from pathlib import Path
 
+from dotenv import load_dotenv
 from google.adk.agents import Agent 
+
+
+BASE_DIR = Path(__file__).resolve().parent
+ENV_PATH = BASE_DIR / ".env"
+
+# Carga el .env local del agente aunque ADK se ejecute desde otra carpeta.
+load_dotenv(ENV_PATH, override=False)
+
+adk_credentials_path = os.environ.get("ADK_CREDENTIALS_PATH")
+if adk_credentials_path and not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = adk_credentials_path
 
 from google.adk.tools import  AgentTool
 from google.genai import types 

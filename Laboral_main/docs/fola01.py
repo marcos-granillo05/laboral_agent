@@ -49,6 +49,12 @@ def upload_to_gcs(bucket_name: str, object_name: str, data: bytes) -> dict:
     }
 
 
+def _build_artifact_filename(case_id: str, safe_dui: str, prefix: str) -> str:
+    short_case_id = case_id[:8]
+    short_dui = safe_dui[:12]
+    return f"{prefix}_{short_dui}_{short_case_id}.docx"
+
+
 # =========================
 # HELPERS DE FORMATO
 # =========================
@@ -314,6 +320,7 @@ async def registro_asesoria_individual_maker(
         safe_dui = "".join(ch for ch in str(dui) if ch.isalnum()) or "sin_dui"
         case_id = uuid.uuid4().hex
         output_filename = f"{case_id}_{safe_dui}_registro_asesoria_individual.docx"
+        artifact_filename = _build_artifact_filename(case_id, safe_dui, "rai")
 
         # GCS
         bucket_name = os.environ["GCS_BUCKET_LABORAL"]
@@ -329,13 +336,14 @@ async def registro_asesoria_individual_maker(
         )
 
         version = await tool_context.save_artifact(
-            filename=output_filename,
+            filename=artifact_filename,
             artifact=artifact_part
         )
 
         return {
             "status": "ok",
             "message": f"El documento {output_filename} versión {version} ha sido creado.",
+            "artifact_filename": artifact_filename,
             # "gcs": save_gcp
         }
 

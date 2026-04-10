@@ -27,6 +27,12 @@ def dbg(step, **kwargs):
                 print(f"    - {k}: <error printing value: {e}>")
 
 
+def _build_artifact_filename(case_id: str, safe_dui: str, prefix: str) -> str:
+    short_case_id = case_id[:8]
+    short_dui = safe_dui[:12]
+    return f"{prefix}_{short_dui}_{short_case_id}.docx"
+
+
 # Para que no truene en dev ni prod je
 def build_storage_client():
     dbg("build_storage_client:start")
@@ -392,6 +398,7 @@ async def document_maker(analysis_json: str, tool_context: CallbackContext) -> d
 
         object_name = f"case_{safe_dui}/analytical_summary/{case_id}_{safe_dui}_analytical_summary_document.docx"
         output_filename = f"{case_id}_{safe_dui}_analytical_summary_document.docx"
+        artifact_filename = _build_artifact_filename(case_id, safe_dui, "asd")
         dbg("document_maker:file_names", object_name=object_name, output_filename=output_filename)
 
         dbg("document_maker:upload_to_gcs:start")
@@ -408,9 +415,9 @@ async def document_maker(analysis_json: str, tool_context: CallbackContext) -> d
         )
         dbg("document_maker:artifact_part_created")
 
-        dbg("document_maker:save_artifact:start", output_filename=output_filename)
+        dbg("document_maker:save_artifact:start", output_filename=output_filename, artifact_filename=artifact_filename)
         version = await tool_context.save_artifact(
-            filename=output_filename,
+            filename=artifact_filename,
             artifact=artifact_part
         )
         dbg("document_maker:save_artifact:done", version=version)
@@ -419,7 +426,8 @@ async def document_maker(analysis_json: str, tool_context: CallbackContext) -> d
         return {
             "status": "ok",
             "message": f"El documento {output_filename} version {version} ha sido creado y disponible para descargar.",
-            "gcs": save_gcp
+            "gcs": save_gcp,
+            "artifact_filename": artifact_filename,
         }
 
     except Exception as e:
@@ -580,7 +588,8 @@ async def document_maker_V02(
 
         object_name = f"case_{safe_dui}/{case_id}_{safe_dui}_reporte_procesal.docx"
         output_filename = f"{case_id}_{safe_dui}_reporte_procesal.docx"
-        dbg("document_maker_V02:file_names", object_name=object_name, output_filename=output_filename)
+        artifact_filename = _build_artifact_filename(case_id, safe_dui, "rpt")
+        dbg("document_maker_V02:file_names", object_name=object_name, output_filename=output_filename, artifact_filename=artifact_filename)
 
         dbg("document_maker_V02:upload_to_gcs:start")
         save_gcp = upload_to_gcs(
@@ -596,9 +605,9 @@ async def document_maker_V02(
         )
         dbg("document_maker_V02:artifact_part_created")
 
-        dbg("document_maker_V02:save_artifact:start", output_filename=output_filename)
+        dbg("document_maker_V02:save_artifact:start", output_filename=output_filename, artifact_filename=artifact_filename)
         version = await tool_context.save_artifact(
-            filename=output_filename,
+            filename=artifact_filename,
             artifact=artifact_part
         )
         dbg("document_maker_V02:save_artifact:done", version=version)
@@ -607,7 +616,8 @@ async def document_maker_V02(
         return {
             "status": "ok",
             "message": f"El documento {output_filename} version {version} ha sido creado y disponible para descargar.",
-            "gcs": save_gcp
+            "gcs": save_gcp,
+            "artifact_filename": artifact_filename,
         }
 
     except Exception as e:

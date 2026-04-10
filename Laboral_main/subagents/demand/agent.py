@@ -8,6 +8,7 @@ from ...tools.rag_complete import rag_resoluciones_judiciales
 from .tools.generate_document import generate_docx_from_html
 from ...tools.read_documents import process_document
 from pydantic import BaseModel, Field 
+from ...docs.demand_doc import demanda_despido_directo_document_maker
 
 def after_model_callback(
     callback_context: CallbackContext,
@@ -27,7 +28,7 @@ def before_model_callback(
 
 
 # JSON de los formatters.
-class worker_personal_data(BaseModel):
+class WorkerPersonalData(BaseModel):
     worker_name: str = Field(description="Nombre completo del trabajador")
     worker_age: str = Field(description="Edad del trabajador")
     worker_marital_status: str = Field(description="Estado marital del trabajador")
@@ -36,14 +37,14 @@ class worker_personal_data(BaseModel):
     worker_address: str = Field(description="Domicilio del trabajador")
     worker_dui: str = Field(description="Dui del trabajador")
 
-class personal_lawyer_data(BaseModel):
+class PersonalLawyerData(BaseModel):
     lawyer_name: str = Field(description="Nombre del abogado en turno")
     lawyer_age: str = Field(description="Nombre del abogado en turno")
     lawyer_dui: str = Field(description="Nombre del abogado en turno")
     lawyer_home: str = Field(description="Nombre del abogado en turno")
     lawyer_card: str = Field(description="Nombre del abogado en turno")
 
-class employment_relationship_data(BaseModel):
+class EmploymentRelationshipData(BaseModel):
     company_defendant: str = Field(description="Nombre de la empresa demandada")
     company_address: str = Field(description="Domicilio de la empresa demandada")
     legal_representative_name: str = Field(description="Nombre del representante legal de la empresa")
@@ -64,9 +65,9 @@ class employment_relationship_data(BaseModel):
     dismissal_place: str = Field(description="Lugar donde ocurrió el despido")
 
 class complete_information(BaseModel):
-    worker_information: worker_personal_data = Field(description="Información completa del Trabajador")
-    lawyer_information: personal_lawyer_data = Field(description="Información completa del abotado")
-    employment_relationship_data = employment_relationship_data = Field(description="Información asociada al Trabajador respecto a su relación laboral")
+    worker_information: WorkerPersonalData = Field(description="Información completa del Trabajador")
+    lawyer_information: PersonalLawyerData = Field(description="Información completa del abotado")
+    employment_relationship_data: EmploymentRelationshipData = Field(description="Información asociada al Trabajador respecto a su relación laboral")
     law_suggestions: str = Field(description="Leyes asociadas violadas al caso")
 
 # class formatterData(BaseModel):
@@ -80,6 +81,7 @@ formatter_agent= Agent(
     description="Agente encargado de formatear",
     instruction= instruction.formatter_agent_instructions_v03,
    # output_schema=formatterData,
+    output_schema=complete_information,
     output_key="formatter_agent_ok",
    
 )
@@ -88,8 +90,9 @@ pdf_generator_agent = Agent(
     name="pdf_generator_agent",
     model="gemini-2.5-flash",
     description="Agente encargado de generar pdf",
-    instruction=instruction.pdf_generator_agent_instructions,
-    tools=[generate_docx_from_html],
+    instruction=instruction.pdf_generator_agent_instructions_v02,
+    #tools=[generate_docx_from_html],
+    tools=[demanda_despido_directo_document_maker],
     before_model_callback=before_model_callback
 )
 

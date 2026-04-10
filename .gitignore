@@ -3,7 +3,7 @@
 .env
 adk.json
 
-.__pycache__
+*__pycache__
 *.pyc
 
 .reporte_*
