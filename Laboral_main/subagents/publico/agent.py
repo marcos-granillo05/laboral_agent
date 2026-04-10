@@ -183,7 +183,7 @@ def before_model_callback_formatter(
 
 laboral_publico_formatter = Agent(
     name="laboral_publico_formatter",
-    model="gemini-2.5-pro",
+    model="gemini-2.5-flash",
     description="Agente formateador de contenido",
     instruction=instructions.formatter_instructions_v03,
     output_key="laboral_publico_formatter_output",
@@ -229,7 +229,7 @@ laboral_publico_response_joiner = Agent(
 
 laboral_publico_reporter = Agent(
     name="laboral_publico_reporter",
-    model="gemini-2.5-pro",
+    model="gemini-2.5-flash",
     description="Agente formateador de contenido",
     instruction=instructions.reporter_instructions_v02,
     tools=[document_maker],

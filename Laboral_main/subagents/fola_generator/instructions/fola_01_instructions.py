@@ -1,0 +1,3 @@
+fola_01_prompt_v0= """
+Tú objetivo es derivar al generador de fola correspondiente.
+"""

@@ -1,14 +1,15 @@
 from google.adk.agents import Agent, SequentialAgent
-from . import instruction
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.models import LlmRequest, LlmResponse
 from google.adk.tools import AgentTool
 from typing import Dict, Any, Optional
-from ...tools.rag_complete import rag_resoluciones_judiciales
-from .tools.generate_document import generate_docx_from_html
-from ...tools.read_documents import process_document
 from pydantic import BaseModel, Field 
-from ...docs.demand_doc import demanda_despido_directo_document_maker
+
+#from . import instruction
+#from .tools.generate_document import generate_docx_from_html
+from .instructions import demand_instructions,formatter_instructions 
+from .docs.demand import demanda_despido_directo_document_maker
+from ...tools.read_documents import process_document
 
 def after_model_callback(
     callback_context: CallbackContext,
@@ -79,28 +80,42 @@ formatter_agent= Agent(
     name="formatter_agent",
     model="gemini-2.5-flash",
     description="Agente encargado de formatear",
-    instruction= instruction.formatter_agent_instructions_v03,
+    instruction= formatter_instructions.formatter_agent_instructions_v0,
    # output_schema=formatterData,
     output_schema=complete_information,
-    output_key="formatter_agent_ok",
+    output_key="formatter_agent_output_key",
    
 )
 
-pdf_generator_agent = Agent(
+# pdf_generator_agent = Agent(
+#     name="pdf_generator_agent",
+#     model="gemini-2.5-flash",
+#     description="Agente encargado de generar pdf",
+#     instruction=instruction.pdf_generator_agent_instructions_v02,
+#     #tools=[generate_docx_from_html],
+#     tools=[demanda_despido_directo_document_maker],
+#     before_model_callback=before_model_callback
+# )
+
+demand_generator_agent = Agent(
     name="pdf_generator_agent",
     model="gemini-2.5-flash",
-    description="Agente encargado de generar pdf",
-    instruction=instruction.pdf_generator_agent_instructions_v02,
-    #tools=[generate_docx_from_html],
-    tools=[demanda_despido_directo_document_maker],
-    before_model_callback=before_model_callback
+    description="Agente encargado de generar demanda en formato Docx",
+    instruction="",
+    tools=[],
 )
+
+
+# sequential_generator_agent = SequentialAgent(
+#     name="sequential_generator_agent",
+#     description="Agente secuencial encargado de guiar la generación de documento apropiado",
+#     sub_agents=[formatter_agent,pdf_generator_agent]
+# )
 
 sequential_generator_agent = SequentialAgent(
     name="sequential_generator_agent",
-    description="Agente encargado de formatear",
-    sub_agents=[formatter_agent,pdf_generator_agent]
-
+    description="Agente secuencial encargado de guiar la generación de documento apropiado",
+    sub_agents=[formatter_agent,demand_generator_agent]
 )
 
 ## Agente que hace la demanda. 
@@ -109,9 +124,7 @@ demand_agent = Agent(
     name="demand_agent",
     model="gemini-2.5-pro",
     description="Eres un agente que crea demandas preliminares.",
-    instruction=instruction.demand_instruction_v03,
-    #tools=[process_document, generate_pdf_from_html],
-    #tools=[process_document, generate_docx_from_html],
+    instruction=demand_instructions.demand_agent_instruction_v0,
     tools=[process_document, AgentTool(agent=sequential_generator_agent)],
     # before_model_callback=before_model_callback,
     # after_model_callback=after_model_callback
