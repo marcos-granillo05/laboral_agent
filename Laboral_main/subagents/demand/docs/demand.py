@@ -161,7 +161,11 @@ def _list_or_empty(value):
     return [value]
 
 
-async def demanda_despido_directo_document_maker(analysis_json: str, tool_context: CallbackContext) -> dict:
+async def complaint_maker(analysis_json: str, tool_context: CallbackContext) -> dict:
+    print(f'--------------------------------------------------')
+    print(f'------------------COMPLAINT MAKER------------------')
+    print(f'--------------------------------------------------')
+    print(f'JSON recibido: {analysis_json}')
     try:
         analysis = json.loads(analysis_json) if isinstance(analysis_json, str) else analysis_json
 

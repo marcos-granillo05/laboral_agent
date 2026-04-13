@@ -52,8 +52,8 @@ demand_generator_agent_prompt_v0 = """
 - Este input lo recibirás a través de {formatter_agent_output_key}
 
 # Uso de herramienta
-- Usa la herramienta `demanda_despido_directo_document_maker`.
-- Debes enviar a `demanda_despido_directo_document_maker` un único argumento llamado `analysis_json`.
+- Usa la herramienta `complaint_maker`.
+- Debes enviar a `complaint_maker` un único argumento llamado `analysis_json`.
 - El valor de `analysis_json` debe contener únicamente un objeto JSON válido.
 - No agregues prefijos, sufijos, comentarios, explicaciones ni bloques markdown.
 - No agregues más de un objeto JSON.

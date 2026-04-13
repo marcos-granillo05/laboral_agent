@@ -125,7 +125,7 @@ async def extract_uploads(tool_context: ToolContext) -> List[Tuple[bytes, str, s
         "image/png",
         "image/webp",
         "application/octet-stream",
-        # "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        # "application/vnd.openxmlformats-officedocument.wordprocessingml.document", -> Esto es para formato word. 
     }
 
     # 1) Archivos del mensaje actual - Cuando utilizamos esto en LOCAL viene en inline_data
@@ -187,7 +187,7 @@ async def process_document(tool_context: ToolContext) -> Dict[str, Any]:
 
     processed_docs = []
     full_docs = []
-    state_docs = tool_context.state.setdefault("documents", [])
+    state_docs = tool_context.state.setdefault("documents", []) # Agente A. --------> Pasa Agente B -----> Pasa a un agente C ---> Agente D (función para recuperar información del estado)
 
     for idx, (file_bytes, mime_type, original_name) in enumerate(uploads):
         text = ocr_document_bytes(
@@ -235,7 +235,7 @@ async def process_document(tool_context: ToolContext) -> Dict[str, Any]:
             "preview": text[:600],
         }
 
-        # guardar completo en estado
+        # Guardamos el doc_record en el estado
         state_docs.append(doc_record)
 
         # guardar completo para combined_ocr_text de esta ejecución

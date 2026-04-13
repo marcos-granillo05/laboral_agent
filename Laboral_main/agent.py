@@ -78,6 +78,11 @@ laboral_orchestator = Agent(
     # tools=[get_all_files_from_context,AgentTool(agent=laboral_privado_sequential), AgentTool(agent=laboral_publico_sequential)],
     sub_agents=[reporter_generator, demand_agent],
     generate_content_config=types.GenerateContentConfig(
+        http_options=types.HttpOptions(
+            # ...
+            retry_options=types.HttpRetryOptions(initial_delay=1, attempts=2),
+            # ...
+        ),
         top_p=0.7,
         # safety_settings=[
         #     types.SafetySetting(
@@ -86,7 +91,7 @@ laboral_orchestator = Agent(
         #     )
         # ]
     ),
-    after_model_callback=after_model_callback
+   # after_model_callback=after_model_callback
     
 )
 

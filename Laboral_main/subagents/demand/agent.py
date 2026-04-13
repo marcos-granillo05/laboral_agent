@@ -7,8 +7,8 @@ from pydantic import BaseModel, Field
 
 #from . import instruction
 #from .tools.generate_document import generate_docx_from_html
-from .instructions import demand_instructions,formatter_instructions 
-from .docs.demand import demanda_despido_directo_document_maker
+from .instructions import demand_instructions,formatter_instructions, demand_generator
+from .docs.demand import complaint_maker
 from ...tools.read_documents import process_document
 
 def after_model_callback(
@@ -29,7 +29,7 @@ def before_model_callback(
 
 
 # JSON de los formatters.
-class WorkerPersonalData(BaseModel):
+class WorkerPersonalData(BaseModel):  # Outputschema  
     worker_name: str = Field(description="Nombre completo del trabajador")
     worker_age: str = Field(description="Edad del trabajador")
     worker_marital_status: str = Field(description="Estado marital del trabajador")
@@ -101,8 +101,8 @@ demand_generator_agent = Agent(
     name="pdf_generator_agent",
     model="gemini-2.5-flash",
     description="Agente encargado de generar demanda en formato Docx",
-    instruction="",
-    tools=[],
+    instruction=demand_generator.demand_generator_agent_prompt_v0,
+    tools=[complaint_maker],
 )
 
 
